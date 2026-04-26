@@ -1,13 +1,13 @@
 from pydantic_ai import Agent
 from pydantic import BaseModel
-from src.database import VectorStore
+from database import VectorStore
 
 class SearchResult(BaseModel):
     answer: str
     source: str
 
-# Создаем агента
-agent = Agent('openai:gpt-4o', result_type=SearchResult)
+# Создаем агента с OpenAI
+agent = Agent[SearchResult]('openai:gpt-4o')
 db = VectorStore()
 
 @agent.tool
