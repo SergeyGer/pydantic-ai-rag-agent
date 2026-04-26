@@ -12,5 +12,8 @@
             100
         ]
     },
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "chat.tools.terminal.autoApprove": {
+        ".\\.venv\\Scripts\\python.exe": true
+    }
 }
