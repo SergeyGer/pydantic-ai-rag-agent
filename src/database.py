@@ -175,9 +175,9 @@ class VectorStore:
         )
         return [item.embedding for item in response.data]
 
-    def _search(self, query: str, doc_type: str = None, top_k: int = 3) -> str:
+    def _search(self, query: str, doc_type: str = None, top_k: int = 3) -> dict:
         if not query:
-            return ""
+            return {"answer": "", "sections": [], "sources": [], "confidence": 0.0}
 
         query_embedding = self._embed_texts([query])[0]
         search_filter = None
@@ -201,28 +201,41 @@ class VectorStore:
         )
 
         if not hits or not hits.points:
-            return "No relevant documents found."
+            return {"answer": "No relevant documents found.", "sections": [], "sources": [], "confidence": 0.0}
 
-        results = []
+        sections = []
+        sources = []
+        scores = []
         for hit in hits.points:
             payload = hit.payload or {}
             payload_text = payload.get("text", "")
             source = payload.get("source", "unknown")
-            results.append(f"Source: {source}\n{payload_text}")
+            sections.append(payload_text)
+            sources.append(source)
+            scores.append(hit.score)
 
-        return "\n\n".join(results)
+        # Простая оценка confidence: средний score
+        confidence = sum(scores) / len(scores) if scores else 0.0
+        answer = " ".join(sections)  # Объединить в один ответ
 
-    def search_company_info(self, query: str) -> str:
+        return {
+            "answer": answer,
+            "sections": sections,
+            "sources": sources,
+            "confidence": confidence
+        }
+
+    def search_company_info(self, query: str) -> dict:
         return self._search(query, doc_type="company_info")
 
-    def search_policy(self, query: str) -> str:
+    def search_policy(self, query: str) -> dict:
         return self._search(query, doc_type="policy")
 
-    def search_faq(self, query: str) -> str:
+    def search_faq(self, query: str) -> dict:
         return self._search(query, doc_type="faq")
 
-    def search_product_data(self, query: str) -> str:
+    def search_product_data(self, query: str) -> dict:
         return self._search(query, doc_type="product_data")
 
-    def search_docs(self, query: str) -> str:
+    def search_docs(self, query: str) -> dict:
         return self._search(query)

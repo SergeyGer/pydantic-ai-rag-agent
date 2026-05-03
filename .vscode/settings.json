@@ -15,6 +15,10 @@
     "python.analysis.typeCheckingMode": "basic",
     "chat.tools.terminal.autoApprove": {
         ".\\.venv\\Scripts\\python.exe": true,
-        "pip": true
+        "pip": true,
+        "/^cd 'c:\\\\Sandbox\\\\Python\\\\5\\.AI-RAG\\\\pydantic-ai-rag-agent'; \\.venv\\\\Scripts\\\\activate; python src/api\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }

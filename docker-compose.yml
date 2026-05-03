@@ -7,3 +7,6 @@ services:
       - .env
     volumes:
       - ./data:/app/data
+    ports:
+      - "8000:8000"
+    command: ["python", "src/api.py"]
