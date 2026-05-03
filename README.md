@@ -2,7 +2,7 @@
 AI Agent for Documentation Analysis
 
 ## Overview
-A production-ready RAG (Retrieval-Augmented Generation) agent built for the smartclip AI Engineer application. It demonstrates structured output validation and tool-calling using **Pydantic-AI**.
+Asample of RAG (Retrieval-Augmented Generation) agent. It demonstrates structured output validation and tool-calling using **Pydantic-AI**.
 
 ## Tech Stack
 - **Framework:** Pydantic-AI

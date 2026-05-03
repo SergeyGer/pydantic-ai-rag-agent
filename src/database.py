@@ -1,9 +1,11 @@
 import csv
+import json
 import uuid
 from pathlib import Path
 from typing import Dict, List
 
 from openai import OpenAI
+from pypdf import PdfReader
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 
@@ -50,7 +52,7 @@ class VectorStore:
 
         documents = []
         for file_path in sorted(path.rglob("*")):
-            if file_path.is_file() and file_path.suffix.lower() in {".txt", ".md", ".csv"}:
+            if file_path.is_file() and file_path.suffix.lower() in {".txt", ".md", ".csv", ".pdf", ".json"}:
                 text = self._read_file(file_path)
                 if not text:
                     continue
@@ -60,6 +62,10 @@ class VectorStore:
                         "source": str(file_path.name),
                         "content": text,
                         "doc_type": self._guess_doc_type(file_path),
+                        "metadata": {
+                            "file_path": str(file_path),
+                            "modified_time": file_path.stat().st_mtime,
+                        }
                     }
                 )
 
@@ -81,6 +87,7 @@ class VectorStore:
                         "source": chunk["source"],
                         "doc_type": chunk["doc_type"],
                         "text": chunk["text"],
+                        "metadata": chunk["metadata"],
                     },
                 )
             )
@@ -88,8 +95,13 @@ class VectorStore:
         self.client.upsert(collection_name=self.COLLECTION_NAME, points=points)
 
     def _read_file(self, file_path: Path) -> str:
-        if file_path.suffix.lower() == ".csv":
+        suffix = file_path.suffix.lower()
+        if suffix == ".csv":
             return self._read_csv(file_path)
+        elif suffix == ".pdf":
+            return self._read_pdf(file_path)
+        elif suffix == ".json":
+            return self._read_json(file_path)
         return file_path.read_text(encoding="utf-8", errors="ignore")
 
     def _read_csv(self, file_path: Path) -> str:
@@ -99,8 +111,21 @@ class VectorStore:
                 lines.append(row.strip())
         return "\n".join(lines)
 
+    def _read_pdf(self, file_path: Path) -> str:
+        reader = PdfReader(file_path)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+        return text.strip()
+
+    def _read_json(self, file_path: Path) -> str:
+        with file_path.open("r", encoding="utf-8", errors="ignore") as json_file:
+            data = json.load(json_file)
+        return json.dumps(data, indent=2, ensure_ascii=False)
+
     def _guess_doc_type(self, file_path: Path) -> str:
         name = file_path.stem.lower()
+        suffix = file_path.suffix.lower()
         if "policy" in name:
             return "policy"
         if "faq" in name:
@@ -109,9 +134,13 @@ class VectorStore:
             return "product_data"
         if "company" in name or "office" in name:
             return "company_info"
+        if suffix == ".json":
+            return "data"
+        if suffix == ".pdf":
+            return "document"
         return "general"
 
-    def _chunk_text(self, document: Dict[str, str]) -> List[Dict[str, str]]:
+    def _chunk_text(self, document: Dict[str, any]) -> List[Dict[str, any]]:
         text = document["content"].replace("\r\n", "\n").strip()
         if len(text) <= self.CHUNK_SIZE:
             return [
@@ -119,6 +148,7 @@ class VectorStore:
                     "text": text,
                     "source": document["source"],
                     "doc_type": document["doc_type"],
+                    "metadata": document["metadata"],
                 }
             ]
 
@@ -132,6 +162,7 @@ class VectorStore:
                     "text": chunk_text,
                     "source": document["source"],
                     "doc_type": document["doc_type"],
+                    "metadata": document["metadata"],
                 }
             )
             start += self.CHUNK_SIZE - self.CHUNK_OVERLAP
