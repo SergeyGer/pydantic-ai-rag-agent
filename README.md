@@ -1,5 +1,5 @@
 # Pydantic-AI RAG Agent
-AI Agent for Documentation Analysis
+AI Agent for Documentation Analysis, a sample of RAG (Retrieval-Augmented Generation) 
 
 ## Overview
 This is a  sample of RAG (Retrieval-Augmented Generation) agent. It demonstrates structured output validation and tool-calling using **Pydantic-AI**.
