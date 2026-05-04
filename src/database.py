@@ -8,6 +8,8 @@ from openai import OpenAI
 from pypdf import PdfReader
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
+import requests
+from bs4 import BeautifulSoup
 
 
 class VectorStore:
@@ -94,6 +96,44 @@ class VectorStore:
 
         self.client.upsert(collection_name=self.COLLECTION_NAME, points=points)
 
+    def load_from_url(self, url: str, doc_type: str = "web"):
+        text = self._read_url(url)
+        if not text or text.startswith("Error"):
+            return text  # Вернуть ошибку
+
+        document = {
+            "source": url,
+            "content": text,
+            "doc_type": doc_type,
+            "metadata": {
+                "url": url,
+                "fetched_time": None,  # Можно добавить datetime.now()
+            }
+        }
+
+        chunks = self._chunk_text(document)
+        if not chunks:
+            return "No content to load"
+
+        embeddings = self._embed_texts([chunk["text"] for chunk in chunks])
+        points = []
+        for chunk, embedding in zip(chunks, embeddings):
+            points.append(
+                rest.PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=embedding,
+                    payload={
+                        "source": chunk["source"],
+                        "doc_type": chunk["doc_type"],
+                        "text": chunk["text"],
+                        "metadata": chunk["metadata"],
+                    },
+                )
+            )
+
+        self.client.upsert(collection_name=self.COLLECTION_NAME, points=points)
+        return f"Loaded content from {url}"
+
     def _read_file(self, file_path: Path) -> str:
         suffix = file_path.suffix.lower()
         if suffix == ".csv":
@@ -122,6 +162,24 @@ class VectorStore:
         with file_path.open("r", encoding="utf-8", errors="ignore") as json_file:
             data = json.load(json_file)
         return json.dumps(data, indent=2, ensure_ascii=False)
+
+    def _read_url(self, url: str) -> str:
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            content_type = response.headers.get('content-type', '').lower()
+            if 'json' in content_type:
+                data = response.json()
+                return json.dumps(data, indent=2, ensure_ascii=False)
+            elif 'html' in content_type or 'text' in content_type:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # Извлечь текст из параграфов, заголовков
+                text = soup.get_text(separator='\n', strip=True)
+                return text
+            else:
+                return response.text
+        except Exception as e:
+            return f"Error fetching URL {url}: {str(e)}"
 
     def _guess_doc_type(self, file_path: Path) -> str:
         name = file_path.stem.lower()

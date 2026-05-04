@@ -32,3 +32,8 @@ def get_faq(ctx, user_query: str) -> dict:
 def get_product_data(ctx, user_query: str) -> dict:
     """Search for product information and specifications."""
     return db.search_product_data(user_query)
+
+@agent.tool
+def load_web_content(ctx, url: str) -> str:
+    """Load and index content from a web URL for future queries."""
+    return db.load_from_url(url)
