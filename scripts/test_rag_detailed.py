@@ -1,7 +1,7 @@
 import requests
 import json
 
-BASE_URL = "http://localhost:8001"
+BASE_URL = "http://localhost:8000"
 
 def test_rag_with_web_content():
     """Test RAG retrieval with web content"""

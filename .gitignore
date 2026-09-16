@@ -219,5 +219,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-_Тест API ключа.txt
 Описание.docx
+
+# IDE / editor workspace files
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db

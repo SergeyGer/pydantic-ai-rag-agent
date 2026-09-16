@@ -4,7 +4,7 @@
 """
 import requests
 
-BASE_URL = "http://localhost:8001"
+BASE_URL = "http://localhost:8000"
 
 print("\n=== Тест 1: Загрузка JSON ===")
 r = requests.post(f"{BASE_URL}/load_url", json={"url": "https://httpbin.org/json"}, timeout=30)

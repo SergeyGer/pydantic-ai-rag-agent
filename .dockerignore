@@ -1,0 +1,28 @@
+# Version control and IDE
+.git
+.gitignore
+.vscode
+*.code-workspace
+
+# Python caches / build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets - never bake the API key into the image
+.env
+.env.*
+.env.example
+
+# Tests and docs
+tests/
+README.md
+LICENSE

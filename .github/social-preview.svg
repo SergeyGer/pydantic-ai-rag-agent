@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="pydantic-ai-rag-agent">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#131a3a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <circle cx="1120" cy="120" r="220" fill="#6366f1" opacity="0.14"/>
+  <circle cx="180" cy="580" r="180" fill="#22d3ee" opacity="0.10"/>
+
+  <text x="80" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">pydantic-ai-rag-agent</text>
+  <rect x="80" y="272" width="200" height="8" rx="4" fill="url(#accent)"/>
+
+  <text x="80" y="352" font-family="Segoe UI, Arial, sans-serif" font-size="34" fill="#c7d2fe">RAG agent for documentation analysis</text>
+  <text x="80" y="404" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#94a3b8">Pydantic-AI &#183; OpenAI GPT-4o &#183; Qdrant &#183; FastAPI &#183; Docker</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#e2e8f0">
+    <rect x="80" y="470" width="240" height="56" rx="28" fill="#1e293b" stroke="#334155"/>
+    <text x="200" y="505" text-anchor="middle">Structured output</text>
+
+    <rect x="340" y="470" width="180" height="56" rx="28" fill="#1e293b" stroke="#334155"/>
+    <text x="430" y="505" text-anchor="middle">Tool-calling</text>
+
+    <rect x="540" y="470" width="190" height="56" rx="28" fill="#1e293b" stroke="#334155"/>
+    <text x="635" y="505" text-anchor="middle">Vector search</text>
+
+    <rect x="750" y="470" width="260" height="56" rx="28" fill="#1e293b" stroke="#334155"/>
+    <text x="880" y="505" text-anchor="middle">Offline unit tests</text>
+  </g>
+</svg>

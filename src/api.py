@@ -1,57 +1,61 @@
+"""FastAPI wrapper around the RAG agent."""
+import os
+
+import uvicorn
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from agent import agent
-import asyncio
+from loguru import logger
+
+from src.agent import agent, db
+from src.models import AnswerResponse, LoadUrlRequest, QuestionRequest, SearchResult
 
 app = FastAPI(title="RAG AI Agent API", version="1.0.0")
 
-class QuestionRequest(BaseModel):
-    question: str
-
-class AnswerResponse(BaseModel):
-    answer: str
-    sections: list[str]
-    sources: list[str]
-    confidence: float
-
-@app.post("/ask", response_model=AnswerResponse)
-async def ask_question(request: QuestionRequest):
-    try:
-        result = await agent.run(request.question)
-        # result.output может быть str или dict
-        if hasattr(result.output, 'answer'):
-            return AnswerResponse(
-                answer=result.output.answer,
-                sections=result.output.sections,
-                sources=result.output.sources,
-                confidence=result.output.confidence
-            )
-        else:
-            # Если str, вернуть как answer
-            return AnswerResponse(
-                answer=str(result.output),
-                sections=[],
-                sources=[],
-                confidence=0.5
-            )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-class LoadUrlRequest(BaseModel):
-    url: str
-
-@app.post("/load_url")
-async def load_url(request: LoadUrlRequest):
-    try:
-        result = await agent.run(f"Load content from {request.url}")
-        return {"message": "Content loaded", "result": str(result.output)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
-async def root():
+async def root() -> dict:
     return {"message": "RAG AI Agent API", "version": "1.0.0"}
 
+
+@app.get("/health")
+async def health() -> dict:
+    """Liveness/readiness probe used by Docker and orchestrators."""
+    return {"status": "ok", "indexed_points": db._points_count()}
+
+
+@app.post("/ask", response_model=AnswerResponse)
+async def ask_question(request: QuestionRequest) -> AnswerResponse:
+    """Answer a question using the RAG agent."""
+    try:
+        result = await agent.run(request.question)
+    except Exception:
+        logger.exception("Failed to answer question: {!r}", request.question)
+        raise HTTPException(status_code=500, detail="Failed to answer the question")
+
+    output = result.output
+    if isinstance(output, SearchResult):
+        return AnswerResponse(
+            answer=output.answer,
+            sections=output.sections,
+            sources=output.sources,
+            confidence=output.confidence,
+        )
+
+    # Defensive fallback: the model did not return the structured output.
+    logger.warning("Agent returned a non-structured output of type {}", type(output).__name__)
+    return AnswerResponse(answer=str(output), sections=[], sources=[], confidence=0.5)
+
+
+@app.post("/load_url")
+async def load_url(request: LoadUrlRequest) -> dict:
+    """Fetch and index a web URL so it can be queried later."""
+    try:
+        message = db.load_from_url(request.url)
+    except Exception:
+        logger.exception("Failed to load URL {}", request.url)
+        raise HTTPException(status_code=500, detail="Failed to load the URL")
+    return {"message": message}
+
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    port = int(os.getenv("API_PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
