@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Switched from the `pydantic-ai` meta-package to `pydantic-ai-slim[openai]`,
+  dropping unused LLM providers (anthropic, google, groq, mistral, xai, mcp, ...)
+  and shrinking the Docker image from ~570 MB to ~303 MB.
+
 ## [1.0.0] - 2026-09-16
 
 ### Added
