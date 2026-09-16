@@ -1,5 +1,5 @@
 # Core agent framework
-pydantic-ai==1.87.0
+pydantic-ai==1.107.5
 
 # LLM provider (chat + embeddings)
 openai==2.32.0
