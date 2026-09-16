@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Keep the interpreter quiet and unbuffered (important for container logs).
 # Disabling bytecode writing keeps the app compatible with a read-only root FS.
