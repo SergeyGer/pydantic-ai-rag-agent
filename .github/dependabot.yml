@@ -20,3 +20,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # Ignore major base-image bumps - handle them manually.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # The Python base image is pinned deliberately (matching the Dockerfile);
+      # a 3.11 -> 3.14 tag change is a *minor* bump, so it needs an explicit rule.
+      - dependency-name: "python"
