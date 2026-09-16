@@ -5,7 +5,7 @@ pydantic-ai==1.87.0
 openai==2.32.0
 
 # Vector store (in-memory for the demo)
-qdrant-client==1.17.1
+qdrant-client==1.19.0
 
 # Web API
 fastapi==0.136.1
