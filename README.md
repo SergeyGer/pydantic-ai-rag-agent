@@ -17,6 +17,102 @@ AI agent for documentation analysis. A small but complete **RAG
 (Retrieval-Augmented Generation)** sample that demonstrates structured output
 validation and tool-calling with **Pydantic-AI**.
 
+## Overview
+
+**Pydantic-AI RAG Agent** is a compact, production-minded reference
+implementation of a Retrieval-Augmented Generation service. It answers
+natural-language questions strictly from *your own* documents and returns a
+**validated, structured answer** instead of free-form prose.
+
+The end-to-end flow is intentionally small and explicit:
+
+1. **Ingest** — documents in `data/` (`.txt`, `.md`, `.csv`, `.pdf`, `.json`,
+   `.docx`) or a web page are loaded and split into overlapping
+   `500`-character chunks.
+2. **Embed** — every chunk is embedded with OpenAI `text-embedding-3-large`
+   (3072 dimensions) and upserted into a **Qdrant** collection.
+3. **Retrieve** — at query time the Pydantic-AI agent calls one of its typed
+   retrieval tools to run a semantic search over the collection.
+4. **Answer** — the model composes an answer grounded in the retrieved context
+   and returns it as a `SearchResult` carrying `answer`, `sections`, `sources`
+   and `confidence`.
+
+Key highlights:
+
+- **Structured output** — the agent's response is validated against a Pydantic
+  model, not parsed out of free text.
+- **Tool calling** — retrieval is exposed as typed tools, keeping the model
+  grounded in your knowledge base.
+- **Two interfaces** — an interactive CLI (`python -m src.main`) and a FastAPI
+  service (`POST /ask`, `POST /load_url`, `GET /health`).
+- **Pluggable storage** — external Qdrant via URL or host/port, with an
+  automatic in-memory fallback for a self-contained demo.
+- **Container-ready** — a hardened, non-root, read-only Docker image runnable
+  with Docker Compose.
+
+## Architecture
+
+The diagram below shows how a request flows from a client through the agent and
+its retrieval tools into the vector store, and how the knowledge base is indexed
+at startup.
+
+```mermaid
+flowchart TD
+    subgraph clients["Clients"]
+        direction LR
+        CLI["CLI<br/>python -m src.main"]
+        HTTP["HTTP client<br/>curl · applications"]
+    end
+
+    subgraph app["Application"]
+        API["FastAPI service<br/>src/api.py<br/>GET / · GET /health<br/>POST /ask · POST /load_url"]
+    end
+
+    subgraph agentlayer["Agent (Pydantic-AI)"]
+        AGENT["RAG Agent<br/>src/agent.py<br/>structured output: SearchResult"]
+        TOOLS["Retrieval tools<br/>get_company_info · get_policy<br/>get_faq · get_product_data<br/>load_web_content"]
+    end
+
+    subgraph datalayer["Data &amp; Retrieval"]
+        STORE["VectorStore<br/>src/database.py<br/>chunk → embed → search"]
+        QDRANT[("Qdrant<br/>collection: documents")]
+        DOCS[("Knowledge base<br/>data/ · txt md csv pdf json docx")]
+    end
+
+    subgraph external["External APIs"]
+        GPT["OpenAI GPT-4o<br/>chat completions"]
+        EMB["OpenAI<br/>text-embedding-3-large"]
+    end
+
+    DOCS -->|index on startup| STORE
+    STORE -->|upsert vectors| QDRANT
+    STORE <-->|embed text| EMB
+
+    CLI --> AGENT
+    HTTP --> API
+    API --> AGENT
+    AGENT <-->|reason + tool calling| GPT
+    AGENT --> TOOLS
+    TOOLS -->|semantic search| STORE
+    STORE -->|top-k chunks| QDRANT
+    TOOLS -->|retrieved context| AGENT
+    AGENT -->|SearchResult| API
+    API -->|AnswerResponse| HTTP
+    AGENT -->|answer| CLI
+
+    classDef clients fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1;
+    classDef app fill:#E8F5E9,stroke:#43A047,stroke-width:2px,color:#1B5E20;
+    classDef agent fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#4A148C;
+    classDef data fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100;
+    classDef ext fill:#FCE4EC,stroke:#D81B60,stroke-width:2px,color:#880E4F;
+
+    class CLI,HTTP clients;
+    class API app;
+    class AGENT,TOOLS agent;
+    class STORE,QDRANT,DOCS data;
+    class GPT,EMB ext;
+```
+
 ## Tech Stack
 
 - **Framework:** [Pydantic-AI](https://ai.pydantic.dev/) `1.107.5`
