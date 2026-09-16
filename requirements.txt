@@ -8,7 +8,7 @@ openai==2.32.0
 qdrant-client==1.19.0
 
 # Web API
-fastapi==0.136.1
+fastapi==0.141.1
 uvicorn==0.52.4
 
 # Document loading
