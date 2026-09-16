@@ -15,7 +15,9 @@ INSTRUCTIONS = (
 def build_agent(db: "VectorStore") -> Agent:
     """Create an agent configured for structured output and register its tools."""
     agent = Agent(
-        "openai:gpt-4o",
+        # 'openai-chat:' pins Chat Completions behaviour; plain 'openai:' will
+        # switch to the Responses API in pydantic-ai v2.0.
+        "openai-chat:gpt-4o",
         output_type=SearchResult,
         instructions=INSTRUCTIONS,
     )
