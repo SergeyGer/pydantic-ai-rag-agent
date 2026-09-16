@@ -3,16 +3,26 @@
 [![CI](https://github.com/SergeyGer/pydantic-ai-rag-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeyGer/pydantic-ai-rag-agent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white)
+![Pydantic-AI](https://img.shields.io/badge/Pydantic--AI-1.107-6E56CF)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-1.19-DC244C?logo=qdrant&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688?logo=fastapi&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-0.52-2C3E50)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![pytest](https://img.shields.io/badge/tests-pytest-0A9EDC?logo=pytest&logoColor=white)
+
 AI agent for documentation analysis. A small but complete **RAG
 (Retrieval-Augmented Generation)** sample that demonstrates structured output
 validation and tool-calling with **Pydantic-AI**.
 
 ## Tech Stack
 
-- **Framework:** [Pydantic-AI](https://ai.pydantic.dev/) `1.87.0`
+- **Framework:** [Pydantic-AI](https://ai.pydantic.dev/) `1.107.5`
 - **LLM:** OpenAI GPT-4o (chat) + `text-embedding-3-large` (embeddings)
-- **Vector store:** Qdrant (external server, with an in-memory fallback)
-- **API:** FastAPI + Uvicorn
+- **Vector store:** Qdrant `1.19` (external server, with an in-memory fallback)
+- **API:** FastAPI `0.141` + Uvicorn `0.52`
 - **Environment:** Docker & Docker Compose
 - All dependency versions are pinned in [`requirements.txt`](requirements.txt).
 
